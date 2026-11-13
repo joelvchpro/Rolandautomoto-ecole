@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Roland Auto-École à Fully (Valais) — formation à la conduite, permis B, cours personnalisés."
+    />
+    <title>Roland Auto-École — Fully</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="is-hero">
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+
+    <header class="site-header" id="top">
+      <a class="brand" href="#top" aria-label="Roland Auto-École — accueil">
+        <img src="assets/roland-logo-header.png" alt="Roland Auto-École" width="200" height="96" />
+      </a>
+      <button
+        class="nav-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="site-nav"
+        aria-label="Ouvrir le menu"
+      >
+        <span></span><span></span>
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Navigation principale">
+        <a href="#services" data-panel="1">Services</a>
+        <a href="#histoire" data-panel="2">Histoire</a>
+        <a href="#contact" data-panel="3">Contact</a>
+      </nav>
+    </header>
+
+    <main id="contenu">
+      <div class="scroll-story" id="scroll-story" aria-label="Parcours de présentation">
+        <div class="stage" id="stage">
+          <div class="panels" id="panels">
+            <!-- Hero -->
+            <section class="panel panel-hero" id="accueil" aria-label="Accueil">
+              <div class="hero-content">
+                <img
+                  class="hero-logo"
+                  src="assets/roland-logo.png"
+                  alt="Roland Auto-École"
+                  width="627"
+                  height="180"
+                />
+                <p class="hero-tagline">Ton auto-moto école proche de toi</p>
+              </div>
+              <p class="scroll-hint" aria-hidden="true">
+                <span>Faites défiler</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 5v14M5 12l7 7 7-7" />
+                </svg>
+              </p>
+            </section>
+
+            <!-- Services — photo + soft overlay + copy -->
+            <section class="panel panel-photo" id="services" aria-labelledby="services-title">
+              <div class="panel-media" aria-hidden="true">
+                <img
+                  src="assets/roland-cars-2.jpg"
+                  alt=""
+                  width="1920"
+                  height="1080"
+                  fetchpriority="high"
+                />
+              </div>
+              <div class="panel-copy services-panel">
+                <p class="eyebrow">Services</p>
+                <h2 id="services-title">Nos formations</h2>
+                <ul class="service-list">
+                  <li>Permis voiture</li>
+                  <li>Permis remorque</li>
+                  <li>Permis moto</li>
+                  <li>Cours de sensibilisation</li>
+                  <li>Cours de préparation d’examen</li>
+                </ul>
+              </div>
+            </section>
+
+            <!-- Histoire -->
+            <section class="panel panel-history" id="histoire" aria-labelledby="histoire-title">
+              <div class="panel-copy">
+                <p class="eyebrow">Histoire</p>
+                <h2 id="histoire-title">Roland, à Fully</h2>
+                <p class="lede">
+                  Après son CFC de mécanicien automobile, Roland a choisi d’accompagner celles et
+                  ceux qui apprennent à conduire, avec patience, clarté et le souci du détail.
+                </p>
+                <p>
+                  Plus de vingt ans d’expérience plus tard, son auto-école reste fidèle à Fully&nbsp;:
+                  une école de proximité, où l’on se connaît, où l’on progresse à son rythme, et où
+                  chaque leçon compte vraiment.
+                </p>
+              </div>
+            </section>
+
+            <!-- Contact -->
+            <section class="panel panel-contact" id="contact" aria-labelledby="contact-title">
+              <div class="panel-copy contact-grid">
+                <div class="contact-intro">
+                  <p class="eyebrow">Contact</p>
+                  <h2 id="contact-title">Parlons<br />de votre<br />permis</h2>
+                  <p class="lede">
+                    Une question, un premier rendez-vous&nbsp;?<br />
+                    Écrivez ou appelez.
+                  </p>
+                </div>
+                <address class="contact-card">
+                  <p>
+                    <span class="label">Adresse</span>
+                    <a
+                      href="https://www.google.com/maps/search/?api=1&query=Rue+de+l%27Eglise+35,+1926+Fully"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      >Rue de l’Église 35<br />1926 Fully</a
+                    >
+                  </p>
+                  <p>
+                    <span class="label">Téléphone</span>
+                    <a href="tel:+41792427242">079 242 7 242</a>
+                  </p>
+                  <p>
+                    <span class="label">E-mail</span>
+                    <a href="mailto:info@rolandauto-ecole.ch">info@rolandauto-ecole.ch</a>
+                  </p>
+                </address>
+              </div>
+            </section>
+          </div>
+
+          <div class="road-scene" aria-hidden="true">
+            <div class="road">
+              <div class="road-line"></div>
+              <div class="car" id="car">
+                <img
+                  class="car-art"
+                  src="assets/roland-car-2d-right.png"
+                  alt=""
+                  width="280"
+                  height="102"
+                  decoding="async"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="year"></span> Roland Auto-École · Fully</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+  </body>
+</html>
