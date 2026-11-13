@@ -448,6 +448,7 @@ body.is-hero .brand {
 /* Contact — split layout (intro left, blue info box right) */
 .panel-contact {
   background: #ffffff;
+  padding-bottom: 2rem;
 }
 
 .panel-contact .eyebrow {
@@ -596,10 +597,44 @@ body.is-hero .brand {
   display: block;
 }
 
+/* Discreet legal links — bottom-right of contact panel */
+.panel-contact .legal-links {
+  position: absolute;
+  right: clamp(1rem, 3vw, 2.25rem);
+  bottom: 0.55rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin: 0;
+  max-width: min(92%, 22rem);
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+  color: rgba(102, 108, 114, 0.72);
+}
+
+.panel-contact .legal-links a {
+  color: rgba(102, 108, 114, 0.78);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.panel-contact .legal-links a:hover {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 /* Footer */
 .site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  flex-wrap: wrap;
   padding: 1.25rem clamp(1rem, 3vw, 2.25rem) 1.75rem;
-  text-align: center;
   color: var(--grey);
   font-size: 0.88rem;
   border-top: 1px solid rgba(0, 66, 137, 0.06);
@@ -608,6 +643,93 @@ body.is-hero .brand {
 
 .site-footer p {
   margin: 0;
+}
+
+.footer-legal {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: rgba(102, 108, 114, 0.72);
+}
+
+.footer-legal a {
+  color: rgba(102, 108, 114, 0.78);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-legal a:hover {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* Simple legal document pages */
+.legal-page {
+  min-height: 100vh;
+  background: #ffffff;
+  color: var(--ink);
+}
+
+.legal-page .legal-shell {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: calc(var(--header-h) + 1.75rem) clamp(1.15rem, 4vw, 2.5rem) 3.5rem;
+}
+
+.legal-page h1 {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.65rem, 4vw, 2.2rem);
+  letter-spacing: -0.02em;
+  color: var(--blue);
+  line-height: 1.15;
+}
+
+.legal-page h2 {
+  margin: 1.75rem 0 0.55rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.legal-page p,
+.legal-page li {
+  margin: 0 0 0.85rem;
+  color: var(--grey);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.legal-page ul {
+  margin: 0 0 1rem;
+  padding-left: 1.15rem;
+}
+
+.legal-page .legal-back {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 0.88rem;
+  color: var(--grey);
+  text-decoration: none;
+}
+
+.legal-page .legal-back:hover {
+  color: var(--blue);
+}
+
+.legal-page .site-header .brand {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 /* Progressive panel reveal helper */
@@ -768,6 +890,21 @@ body.is-hero .brand {
 
   .contact-card p:last-child {
     padding-bottom: 0.05rem;
+  }
+
+  .panel-contact .legal-links {
+    right: 1.15rem;
+    bottom: 0.35rem;
+    font-size: 0.62rem;
+    max-width: calc(100% - 2.3rem);
+  }
+
+  .site-footer {
+    justify-content: space-between;
+  }
+
+  .footer-legal {
+    font-size: 0.65rem;
   }
 
 }
