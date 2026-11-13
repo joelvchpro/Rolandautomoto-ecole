@@ -8,6 +8,21 @@
   const navLinks = nav ? [...nav.querySelectorAll("[data-panel]")] : [];
 
   if (year) year.textContent = String(new Date().getFullYear());
+
+  /* Safari iOS: sync stage height to the visible viewport (toolbar safe) */
+  function syncAppVh() {
+    const vv = window.visualViewport;
+    const h = vv && vv.height ? vv.height : window.innerHeight;
+    if (!h) return;
+    document.documentElement.style.setProperty("--app-vh", `${Math.round(h)}px`);
+  }
+  syncAppVh();
+  window.addEventListener("resize", syncAppVh);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", syncAppVh);
+    window.visualViewport.addEventListener("scroll", syncAppVh);
+  }
+
   if (!story || !panels) return;
 
   const REAL_COUNT = 4;
@@ -303,7 +318,10 @@
       window.addEventListener("touchend", onTouchEnd, { passive: true });
       window.addEventListener("touchcancel", onTouchEnd, { passive: true });
     }
-    window.addEventListener("resize", () => applyTrack(trackIndex, { animate: false }));
+    window.addEventListener("resize", () => {
+      syncAppVh();
+      applyTrack(trackIndex, { animate: false });
+    });
     applyTrack(FIRST_REAL, { animate: false });
   }
 })();

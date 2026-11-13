@@ -10,6 +10,8 @@
   --road-line: #e8ecef;
   --header-h: 4.25rem;
   --road-h: 5.5rem;
+  /* Safari iOS: 100vh includes area behind the browser chrome */
+  --app-vh: 100vh;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --font-display: "Syne", sans-serif;
   --font-body: "Figtree", sans-serif;
@@ -19,6 +21,12 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-vh: 100dvh;
+  }
 }
 
 html {
@@ -32,6 +40,7 @@ body {
   color: var(--ink);
   background: var(--white);
   min-height: 100vh;
+  min-height: var(--app-vh);
   line-height: 1.55;
   overflow-x: hidden;
   overscroll-behavior-x: none;
@@ -171,6 +180,7 @@ body.is-hero .brand {
   position: sticky;
   top: 0;
   height: 100vh;
+  height: var(--app-vh);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -546,18 +556,20 @@ body.is-hero .brand {
 
 /* Road + car */
 .road-scene {
-  height: var(--road-h);
+  height: calc(var(--road-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   flex-shrink: 0;
   position: relative;
   z-index: 5;
   background: #ffffff;
+  box-sizing: border-box;
 }
 
 .road {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: env(safe-area-inset-bottom, 0px);
   height: 3.4rem;
   background: linear-gradient(180deg, #5a6168 0%, var(--road) 55%, #3d4349 100%);
   box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.08);
@@ -671,6 +683,7 @@ body.is-hero .brand {
 /* Simple legal document pages */
 .legal-page {
   min-height: 100vh;
+  min-height: var(--app-vh);
   background: #ffffff;
   color: var(--ink);
 }
@@ -815,7 +828,7 @@ body.is-hero .brand {
 
   .car {
     width: min(148px, 42vw);
-    bottom: 1.05rem;
+    bottom: calc(1.05rem + env(safe-area-inset-bottom, 0px));
   }
 
   .road {
