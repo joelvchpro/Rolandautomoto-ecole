@@ -700,6 +700,76 @@ body.is-hero .brand {
     height: 2.7rem;
   }
 
+  /* Contact: keep intro + card fully in the phone viewport */
+  .panel-contact {
+    align-items: stretch;
+    padding-top: calc(var(--header-h) + 0.75rem);
+    padding-bottom: 0.65rem;
+  }
+
+  .panel-contact .contact-grid {
+    gap: 0.85rem;
+    max-height: 100%;
+    align-content: start;
+  }
+
+  .panel-contact .contact-intro {
+    max-width: none;
+  }
+
+  .panel-contact .eyebrow {
+    margin-bottom: 0.2rem;
+    font-size: 0.72rem;
+  }
+
+  .panel-contact h2 {
+    font-size: clamp(1.55rem, 7.2vw, 1.95rem);
+    line-height: 1.12;
+    margin-bottom: 0.4rem;
+  }
+
+  .panel-contact h2 .title-break {
+    display: none;
+  }
+
+  .panel-contact .lede {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    max-width: none;
+  }
+
+  .panel-contact .lede .lede-break {
+    display: none;
+  }
+
+  .contact-card {
+    max-width: none;
+    padding: 0.95rem 1.1rem;
+  }
+
+  .contact-card .label {
+    font-size: 0.65rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .contact-card a {
+    font-size: 0.98rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .contact-card p {
+    padding: 0.65rem 0;
+  }
+
+  .contact-card p:first-child {
+    padding-top: 0.05rem;
+  }
+
+  .contact-card p:last-child {
+    padding-bottom: 0.05rem;
+  }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
