@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Mentions légales — Roland Auto-École, Fully." />
+    <title>Mentions légales — Roland Auto-École</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="legal-page">
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+
+    <header class="site-header" id="top">
+      <a class="brand" href="index.html" aria-label="Roland Auto-École — accueil">
+        <img src="assets/roland-logo-header.png" alt="Roland Auto-École" width="200" height="96" />
+      </a>
+      <nav class="site-nav" id="site-nav" aria-label="Navigation principale">
+        <a href="index.html#services">Services</a>
+        <a href="index.html#histoire">Histoire</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main id="contenu" class="legal-shell">
+      <a class="legal-back" href="index.html">← Retour</a>
+      <h1>Mentions légales</h1>
+
+      <h2>Éditeur du site</h2>
+      <p>
+        Roland Auto-École<br />
+        Rue de l’Église 35<br />
+        1926 Fully<br />
+        Suisse
+      </p>
+      <p>
+        Téléphone&nbsp;:
+        <a href="tel:+41792427242">079 242 7 242</a><br />
+        E-mail&nbsp;:
+        <a href="mailto:info@roland-autoecole.ch">info@roland-autoecole.ch</a>
+      </p>
+
+      <h2>Responsable de la publication</h2>
+      <p>Le responsable de la publication est le titulaire de Roland Auto-École.</p>
+
+      <h2>Hébergement</h2>
+      <p>
+        Ce site est hébergé via la plateforme de publication Cursor. Les modalités techniques
+        d’hébergement peuvent évoluer selon le prestataire utilisé.
+      </p>
+
+      <h2>Propriété intellectuelle</h2>
+      <p>
+        Les textes, éléments graphiques, logos et photographies présents sur ce site sont protégés.
+        Toute reproduction non autorisée est interdite, sauf usage privé ou citation courte avec
+        mention de la source.
+      </p>
+
+      <h2>Responsabilité</h2>
+      <p>
+        Les informations publiées le sont à titre indicatif. Roland Auto-École s’efforce de les
+        maintenir exactes, sans garantir l’absence d’erreur ou d’omission. L’utilisation du site se
+        fait sous la responsabilité de l’utilisateur.
+      </p>
+
+      <h2>Droit applicable</h2>
+      <p>Les présentes mentions sont régies par le droit suisse. Le for est à Fully (VS), sous réserve des dispositions impératives applicables.</p>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="year"></span> Roland Auto-École · Fully</p>
+      <nav class="footer-legal" aria-label="Informations légales">
+        <a href="confidentialite.html">Politique de confidentialité</a>
+        <span aria-hidden="true">·</span>
+        <a href="mentions-legales.html" aria-current="page">Mentions légales</a>
+      </nav>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = String(new Date().getFullYear());
+    </script>
+  </body>
+</html>
