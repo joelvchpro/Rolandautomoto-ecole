@@ -10,6 +10,8 @@
   --road-line: #e8ecef;
   --header-h: 4.25rem;
   --road-h: 5.5rem;
+  /* Safari iOS: 100vh includes area behind the browser chrome */
+  --app-vh: 100vh;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --font-display: "Syne", sans-serif;
   --font-body: "Figtree", sans-serif;
@@ -19,6 +21,12 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-vh: 100dvh;
+  }
 }
 
 html {
@@ -32,6 +40,7 @@ body {
   color: var(--ink);
   background: var(--white);
   min-height: 100vh;
+  min-height: var(--app-vh);
   line-height: 1.55;
   overflow-x: hidden;
   overscroll-behavior-x: none;
@@ -171,6 +180,7 @@ body.is-hero .brand {
   position: sticky;
   top: 0;
   height: 100vh;
+  height: var(--app-vh);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -546,21 +556,25 @@ body.is-hero .brand {
 
 /* Road + car */
 .road-scene {
-  height: var(--road-h);
+  height: calc(var(--road-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   flex-shrink: 0;
   position: relative;
   z-index: 5;
   background: #ffffff;
+  box-sizing: border-box;
 }
 
 .road {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: env(safe-area-inset-bottom, 0px);
   height: 3.4rem;
   background: linear-gradient(180deg, #5a6168 0%, var(--road) 55%, #3d4349 100%);
   box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.08);
+  /* La fumée déborde à gauche de la voiture : ne pas rogner */
+  overflow: visible;
 }
 
 .road-line {
@@ -570,31 +584,277 @@ body.is-hero .brand {
   right: 0;
   height: 3px;
   transform: translateY(-50%);
+  overflow: hidden;
+  opacity: 0.85;
+}
+
+/* Bande de pointillés plus large que l'écran — défile via translateX (modulo) */
+.road-line-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 400%;
   background: repeating-linear-gradient(
     90deg,
     var(--road-line) 0 28px,
     transparent 28px 48px
   );
-  opacity: 0.85;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Mover : largeur = voiture ; déplacement en px (modulo hors écran) */
+.car-mover {
+  position: absolute;
+  left: 0;
+  bottom: 1.35rem;
+  width: min(220px, 36vw);
+  pointer-events: none;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  overflow: visible;
+}
+
+.car-bundle {
+  position: relative;
+  width: 100%;
+  overflow: visible;
 }
 
 .car {
-  position: absolute;
-  bottom: 1.35rem;
-  left: 4%;
-  width: min(220px, 36vw);
-  transform: translateX(0);
-  will-change: left;
+  position: relative;
+  width: 100%;
   filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.22));
-  transition: none;
   line-height: 0;
-  pointer-events: none;
+  overflow: visible;
+  z-index: 2;
+}
+
+/* Conteneur au ratio de l'image : overlays en % */
+.car-rig {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 959 / 350;
+  overflow: visible;
 }
 
 .car-art {
   width: 100%;
   height: auto;
   display: block;
+  position: relative;
+  z-index: 1;
+}
+
+/* Roues — jantes seules, rotation autour du moyeu */
+.wheel {
+  position: absolute;
+  z-index: 2;
+  width: var(--d, 11%);
+  aspect-ratio: 1;
+  left: var(--cx, 50%);
+  top: var(--cy, 77%);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wheel-rear {
+  --cx: 16.7%;
+  --cy: 77%;
+  --d: 11.2%;
+}
+
+.wheel-front {
+  --cx: 81.2%;
+  --cy: 77%;
+  --d: 10.6%;
+}
+
+.wheel-rotator {
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+  transform: rotate(0deg);
+}
+
+.wheel-rotator img {
+  position: absolute;
+  /* Largeur image = largeur voiture / diamètre roue */
+  width: calc(100% * (100 / var(--d-num, 11.2)));
+  height: auto;
+  max-width: none;
+  /* Aligne le centre de la roue (cx, cy) sur le centre du cercle */
+  left: calc(50% - (var(--cx-num, 16.7) / var(--d-num, 11.2)) * 100%);
+  top: calc(
+    50% - (var(--cy-num, 77) / var(--d-num, 11.2)) * (350 / 959) * 100%
+  );
+}
+
+.wheel-rear {
+  --cx-num: 16.7;
+  --cy-num: 77;
+  --d-num: 11.2;
+}
+
+.wheel-front {
+  --cx-num: 81.2;
+  --cy-num: 77;
+  --d-num: 10.6;
+}
+
+/* Phares — allumés via .is-lit sur .car-rig */
+.light {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  will-change: opacity;
+}
+
+.car-rig.is-lit .light {
+  opacity: 1;
+}
+
+.light-tail {
+  left: 5%;
+  top: 39%;
+  width: 4.5%;
+  aspect-ratio: 1.4 / 1;
+  transform: translate(-50%, -50%);
+  border-radius: 40%;
+  background: radial-gradient(circle, rgba(255, 70, 60, 0.95) 0%, rgba(255, 40, 30, 0.35) 55%, transparent 72%);
+  filter: blur(1.2px);
+  box-shadow: 0 0 10px 3px rgba(255, 48, 40, 0.45);
+}
+
+.light-head {
+  left: 93.5%;
+  top: 53%;
+  width: 5.2%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 248, 220, 0.95) 0%, rgba(255, 230, 160, 0.4) 45%, transparent 70%);
+  filter: blur(1.5px);
+  box-shadow: 0 0 14px 5px rgba(255, 236, 180, 0.55);
+}
+
+.light-indicator {
+  left: 90.5%;
+  top: 52%;
+  width: 2.4%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 170, 40, 0.95) 0%, rgba(255, 140, 0, 0.35) 55%, transparent 70%);
+  filter: blur(0.8px);
+}
+
+/* Faisceau projeté vers l'avant (droite) */
+.light-beam {
+  left: 96%;
+  top: 53%;
+  width: 38%;
+  height: 28%;
+  transform: translate(0, -50%);
+  transform-origin: left center;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 244, 200, 0.28) 0%,
+    rgba(255, 244, 200, 0.1) 42%,
+    transparent 100%
+  );
+  clip-path: polygon(0 38%, 100% 0%, 100% 100%, 0 62%);
+  filter: blur(2px);
+  opacity: 0;
+}
+
+.car-rig.is-lit .light-beam {
+  opacity: 0.85;
+}
+
+/*
+  Fumée — cause d'invisibilité corrigée :
+  - était z-index:0 sous .car-art, particules % trop petites, gris trop sombre,
+    et clip possible via filter:drop-shadow du .car → sortie en sœur du .car
+*/
+.exhaust {
+  position: absolute;
+  left: 3%;
+  top: 82%;
+  width: 1px;
+  height: 1px;
+  z-index: 3; /* au-dessus de la route et visible à côté de la carrosserie */
+  pointer-events: none;
+  overflow: visible;
+  opacity: 0;
+  transition: opacity 0.15s var(--ease);
+}
+
+.car-bundle.is-smoking .exhaust,
+.car-bundle.is-smoke-ending .exhaust {
+  opacity: 1;
+}
+
+.smoke {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  /* Blanc cassé lisible sur la route grise (évite le fond blanc de page) */
+  background: radial-gradient(
+    circle,
+    rgba(245, 245, 245, 0.92) 0%,
+    rgba(220, 220, 220, 0.7) 42%,
+    rgba(200, 200, 200, 0) 74%
+  );
+  filter: blur(3px);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: none;
+}
+
+/* Émission active (moteur allumé) */
+.car-bundle.is-smoking .smoke {
+  animation: smoke-puff 1.35s ease-out infinite;
+}
+
+/* Fin de course : plus de nouvelles boucles, une dernière puff puis stop */
+.car-bundle.is-smoke-ending .smoke {
+  animation: smoke-puff 1.35s ease-out 1 forwards;
+}
+
+.car-bundle.is-smoking .smoke.s2,
+.car-bundle.is-smoke-ending .smoke.s2 { animation-delay: 0.18s; }
+.car-bundle.is-smoking .smoke.s3,
+.car-bundle.is-smoke-ending .smoke.s3 { animation-delay: 0.36s; }
+.car-bundle.is-smoking .smoke.s4,
+.car-bundle.is-smoke-ending .smoke.s4 { animation-delay: 0.54s; }
+.car-bundle.is-smoking .smoke.s5,
+.car-bundle.is-smoke-ending .smoke.s5 { animation-delay: 0.72s; }
+.car-bundle.is-smoking .smoke.s6,
+.car-bundle.is-smoke-ending .smoke.s6 { animation-delay: 0.9s; }
+
+/* Principalement vers l'arrière (gauche), peu vers le haut → reste sur la route grise */
+@keyframes smoke-puff {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.85);
+  }
+  14% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-52px, -8px, 0) scale(2.85);
+  }
 }
 
 /* Discreet legal links — bottom-right of contact panel */
@@ -671,6 +931,7 @@ body.is-hero .brand {
 /* Simple legal document pages */
 .legal-page {
   min-height: 100vh;
+  min-height: var(--app-vh);
   background: #ffffff;
   color: var(--ink);
 }
@@ -813,9 +1074,9 @@ body.is-hero .brand {
   }
 
 
-  .car {
+  .car-mover {
+    bottom: calc(1.05rem + env(safe-area-inset-bottom, 0px));
     width: min(148px, 42vw);
-    bottom: 1.05rem;
   }
 
   .road {
@@ -920,7 +1181,26 @@ body.is-hero .brand {
   }
 
   .car,
-  .panels {
+  .car-mover,
+  .panels,
+  .road-line-strip,
+  .wheel-rotator {
     transition: none !important;
+  }
+
+  .smoke,
+  .car-bundle.is-smoking .smoke,
+  .car-bundle.is-smoke-ending .smoke {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  .exhaust {
+    opacity: 0 !important;
+  }
+
+  .light {
+    transition: none !important;
+    opacity: 0 !important;
   }
 }

@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta
       name="description"
       content="Roland Auto-École à Fully (Valais) — formation à la conduite, permis B, cours personnalisés."
@@ -146,16 +146,50 @@
 
           <div class="road-scene" aria-hidden="true">
             <div class="road">
-              <div class="road-line"></div>
-              <div class="car" id="car">
-                <img
-                  class="car-art"
-                  src="assets/roland-car-2d-right.png"
-                  alt=""
-                  width="280"
-                  height="102"
-                  decoding="async"
-                />
+              <div class="road-line">
+                <div class="road-line-strip" id="road-line-strip"></div>
+              </div>
+              <!-- Mover : translate3d en px (boucle hors écran via modulo) -->
+              <div class="car-mover" id="car-mover">
+                <div class="car-bundle" id="car-bundle">
+                  <div class="car" id="car">
+                    <div class="car-rig">
+                      <img
+                        class="car-art"
+                        src="assets/roland-car-2d-right.png"
+                        alt=""
+                        width="959"
+                        height="350"
+                        decoding="async"
+                      />
+                      <!-- Roues : cercles sur les jantes, rotation liée au scroll -->
+                      <div class="wheel wheel-rear" data-cx="16.7" data-cy="77" data-d="11.2">
+                        <div class="wheel-rotator" id="wheel-rear">
+                          <img src="assets/roland-car-2d-right.png" alt="" width="959" height="350" decoding="async" />
+                        </div>
+                      </div>
+                      <div class="wheel wheel-front" data-cx="81.2" data-cy="77" data-d="10.6">
+                        <div class="wheel-rotator" id="wheel-front">
+                          <img src="assets/roland-car-2d-right.png" alt="" width="959" height="350" decoding="async" />
+                        </div>
+                      </div>
+                      <!-- Phares / feux -->
+                      <span class="light light-tail" id="light-tail"></span>
+                      <span class="light light-head" id="light-head"></span>
+                      <span class="light light-indicator" id="light-indicator"></span>
+                      <span class="light light-beam" id="light-beam"></span>
+                    </div>
+                  </div>
+                  <!-- Fumée hors du .car (évite clip du drop-shadow) ; sœur non rognée -->
+                  <div class="exhaust" id="exhaust">
+                    <span class="smoke s1"></span>
+                    <span class="smoke s2"></span>
+                    <span class="smoke s3"></span>
+                    <span class="smoke s4"></span>
+                    <span class="smoke s5"></span>
+                    <span class="smoke s6"></span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
