@@ -582,31 +582,241 @@ body.is-hero .brand {
   right: 0;
   height: 3px;
   transform: translateY(-50%);
+  overflow: hidden;
+  opacity: 0.85;
+}
+
+/* Bande de pointillés plus large que l'écran — défile via translateX (modulo) */
+.road-line-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 400%;
   background: repeating-linear-gradient(
     90deg,
     var(--road-line) 0 28px,
     transparent 28px 48px
   );
-  opacity: 0.85;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Piste pleine largeur : translateX(%) se calcule sur la route */
+.car-mover {
+  position: absolute;
+  left: 0;
+  bottom: 1.35rem;
+  width: 100%;
+  pointer-events: none;
+  will-change: transform;
+  transform: translate3d(4%, 0, 0);
 }
 
 .car {
-  position: absolute;
-  bottom: 1.35rem;
-  left: 4%;
+  position: relative;
   width: min(220px, 36vw);
-  transform: translateX(0);
-  will-change: left;
   filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.22));
-  transition: none;
   line-height: 0;
-  pointer-events: none;
+}
+
+/* Conteneur au ratio de l'image : overlays en % */
+.car-rig {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 959 / 350;
 }
 
 .car-art {
   width: 100%;
   height: auto;
   display: block;
+  position: relative;
+  z-index: 1;
+}
+
+/* Roues — jantes seules, rotation autour du moyeu */
+.wheel {
+  position: absolute;
+  z-index: 2;
+  width: var(--d, 11%);
+  aspect-ratio: 1;
+  left: var(--cx, 50%);
+  top: var(--cy, 77%);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wheel-rear {
+  --cx: 16.7%;
+  --cy: 77%;
+  --d: 11.2%;
+}
+
+.wheel-front {
+  --cx: 81.2%;
+  --cy: 77%;
+  --d: 10.6%;
+}
+
+.wheel-rotator {
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+  transform: rotate(0deg);
+}
+
+.wheel-rotator img {
+  position: absolute;
+  /* Largeur image = largeur voiture / diamètre roue */
+  width: calc(100% * (100 / var(--d-num, 11.2)));
+  height: auto;
+  max-width: none;
+  /* Aligne le centre de la roue (cx, cy) sur le centre du cercle */
+  left: calc(50% - (var(--cx-num, 16.7) / var(--d-num, 11.2)) * 100%);
+  top: calc(
+    50% - (var(--cy-num, 77) / var(--d-num, 11.2)) * (350 / 959) * 100%
+  );
+}
+
+.wheel-rear {
+  --cx-num: 16.7;
+  --cy-num: 77;
+  --d-num: 11.2;
+}
+
+.wheel-front {
+  --cx-num: 81.2;
+  --cy-num: 77;
+  --d-num: 10.6;
+}
+
+/* Phares — allumés via .is-lit sur .car-rig */
+.light {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  will-change: opacity;
+}
+
+.car-rig.is-lit .light {
+  opacity: 1;
+}
+
+.light-tail {
+  left: 5%;
+  top: 39%;
+  width: 4.5%;
+  aspect-ratio: 1.4 / 1;
+  transform: translate(-50%, -50%);
+  border-radius: 40%;
+  background: radial-gradient(circle, rgba(255, 70, 60, 0.95) 0%, rgba(255, 40, 30, 0.35) 55%, transparent 72%);
+  filter: blur(1.2px);
+  box-shadow: 0 0 10px 3px rgba(255, 48, 40, 0.45);
+}
+
+.light-head {
+  left: 93.5%;
+  top: 53%;
+  width: 5.2%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 248, 220, 0.95) 0%, rgba(255, 230, 160, 0.4) 45%, transparent 70%);
+  filter: blur(1.5px);
+  box-shadow: 0 0 14px 5px rgba(255, 236, 180, 0.55);
+}
+
+.light-indicator {
+  left: 90.5%;
+  top: 52%;
+  width: 2.4%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 170, 40, 0.95) 0%, rgba(255, 140, 0, 0.35) 55%, transparent 70%);
+  filter: blur(0.8px);
+}
+
+/* Faisceau projeté vers l'avant (droite) */
+.light-beam {
+  left: 96%;
+  top: 53%;
+  width: 38%;
+  height: 28%;
+  transform: translate(0, -50%);
+  transform-origin: left center;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 244, 200, 0.28) 0%,
+    rgba(255, 244, 200, 0.1) 42%,
+    transparent 100%
+  );
+  clip-path: polygon(0 38%, 100% 0%, 100% 100%, 0 62%);
+  filter: blur(2px);
+  opacity: 0;
+}
+
+.car-rig.is-lit .light-beam {
+  opacity: 0.85;
+}
+
+/* Fumée échappement — émission sous le pare-chocs arrière (gauche) */
+.exhaust {
+  position: absolute;
+  left: 3%;
+  top: 78%;
+  width: 14%;
+  height: 22%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+
+.car-rig.is-smoking .exhaust {
+  opacity: var(--smoke-intensity, 0.55);
+}
+
+.smoke {
+  position: absolute;
+  left: 20%;
+  top: 40%;
+  width: 28%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(170, 176, 182, 0.55) 0%, rgba(170, 176, 182, 0.15) 55%, transparent 70%);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.car-rig.is-smoking .smoke {
+  animation: smoke-puff 1.15s ease-out infinite;
+}
+
+.smoke.s2 { animation-delay: 0.18s; left: 8%; }
+.smoke.s3 { animation-delay: 0.36s; left: 28%; top: 55%; }
+.smoke.s4 { animation-delay: 0.54s; left: 0%; top: 30%; width: 34%; }
+.smoke.s5 { animation-delay: 0.72s; left: 16%; top: 50%; }
+.smoke.s6 { animation-delay: 0.9s; left: 4%; top: 62%; width: 22%; }
+
+/* Vers l'arrière = vers la gauche + léger haut + fade */
+@keyframes smoke-puff {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.45);
+  }
+  18% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-120%, -55%, 0) scale(1.55);
+  }
 }
 
 /* Discreet legal links — bottom-right of contact panel */
@@ -826,9 +1036,12 @@ body.is-hero .brand {
   }
 
 
+  .car-mover {
+    bottom: calc(1.05rem + env(safe-area-inset-bottom, 0px));
+  }
+
   .car {
     width: min(148px, 42vw);
-    bottom: calc(1.05rem + env(safe-area-inset-bottom, 0px));
   }
 
   .road {
@@ -933,7 +1146,21 @@ body.is-hero .brand {
   }
 
   .car,
-  .panels {
+  .car-mover,
+  .panels,
+  .road-line-strip,
+  .wheel-rotator {
     transition: none !important;
+  }
+
+  .smoke,
+  .car-rig.is-smoking .smoke {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  .light {
+    transition: none !important;
+    opacity: 0 !important;
   }
 }
