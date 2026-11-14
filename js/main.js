@@ -2,7 +2,10 @@
   const story = document.getElementById("scroll-story");
   const panels = document.getElementById("panels");
   const carMover = document.getElementById("car-mover");
+  const carBundle = document.getElementById("car-bundle");
+  const carEl = document.getElementById("car");
   const carRig = document.querySelector("#car .car-rig");
+  const roadEl = document.querySelector(".road");
   const roadStrip = document.getElementById("road-line-strip");
   const wheelFront = document.getElementById("wheel-front");
   const wheelRear = document.getElementById("wheel-rear");
@@ -31,8 +34,6 @@
 
   const REAL_COUNT = 4;
   const REAL_MAX = REAL_COUNT - 1;
-  const CAR_START = 4; /* % de la largeur de route */
-  const CAR_TRAVEL = 78;
   const SNAP_MS = 720;
   const WHEEL_LOCK_MS = 780;
   const SWIPE_THRESHOLD = 48;
@@ -41,6 +42,11 @@
   /* Lerp (0–1) : plus élevé = plus réactif */
   const LERP = 0.14;
   const LERP_FAST = 0.22;
+  /* Distance px parcourue par « pas » de panneau (≈ fraction de la largeur route) */
+  const TRAVEL_PX_PER_STEP = () => Math.max(160, (roadEl ? roadEl.clientWidth : window.innerWidth) * 0.42);
+  const VELOCITY_ON = 8; /* px/s lissés — seuil moteur allumé */
+  const SMOKE_IDLE_MS = 150;
+  const LIGHTS_IDLE_MS = 1000;
 
   const originals = [...panels.querySelectorAll(":scope > .panel")];
   originals.forEach((el, i) => {
@@ -84,17 +90,18 @@
   let wheelLocked = false;
   let wrapTimer = 0;
 
-  /* État animé continu (jamais de reset brutal pour la route) */
+  /* État animé continu (route + voiture : pas de reset brutal visible) */
   let targetLogical = 0;
   let smoothLogical = 0;
-  let travelAbs = 0; /* distance cumulée en « unités route » (0–1 ≈ plein parcours) */
-  let travelSmooth = 0;
+  let travelAbsPx = 0; /* distance cumulée en px (signe = sens) */
+  let travelSmoothPx = 0;
   let roadOffsetPx = 0;
   let lightsLit = false;
   let smoking = false;
-  let smokeIntensity = 0;
   let lastTs = 0;
-  let movingUntil = 0;
+  let lastMotionTs = 0;
+  let smokeEndTimer = 0;
+  let velocityPx = 0; /* vitesse lissée px/s */
 
   function clamp(n, min, max) {
     return Math.min(max, Math.max(min, n));
@@ -110,25 +117,28 @@
     return clamp(i - FIRST_REAL, 0, REAL_MAX);
   }
 
-  function carXFromLogical(logicalFloat) {
-    const p = clamp(logicalFloat / REAL_MAX, 0, 1);
-    return CAR_START + p * CAR_TRAVEL;
+  /**
+   * Position X en px : boucle hors écran.
+   * span = largeur route + largeur voiture.
+   * mod 0 → x = -carW (entièrement à gauche, hors champ) ;
+   * mod augmente → la voiture entre par la gauche, sort complètement à droite (x = roadW).
+   */
+  function carXFromTravel(travelPx) {
+    const roadW = roadEl ? roadEl.clientWidth : window.innerWidth;
+    const carW = carMover ? carMover.offsetWidth : carEl ? carEl.offsetWidth : 180;
+    const span = Math.max(roadW + carW, 1);
+    /* Décalage initial : ~4% de la route visible au chargement */
+    const start = roadW * 0.04 + carW;
+    const mod = (((start + travelPx) % span) + span) % span;
+    return mod - carW;
   }
 
-  /** Rayon roue en % de largeur voiture → angle (deg) pour une distance route en % */
-  function wheelAngleDeg(travelUnits, diameterPct) {
-    /* 1 travelUnit ≈ déplacement car de CAR_TRAVEL% de la route.
-       Approximation : distance px ≈ travelUnits * largeur_route * (CAR_TRAVEL/100)
-       Rayon roue ≈ (diameterPct/100) * largeur_voiture / 2
-       On exprime tout en fraction de largeur voiture : la voiture fait ~36vw max,
-       la route 100vw → facteur ~100/36. On simplifie avec un facteur stable. */
-    const roadToCar = 100 / 34; /* largeur route / largeur voiture approx */
-    const distInCarWidths = travelUnits * (CAR_TRAVEL / 100) * roadToCar;
-    const radius = diameterPct / 100 / 2;
-    if (radius <= 0) return 0;
-    /* sens : avance vers la droite → rotation horaire (négatif en CSS = sens antihoraire,
-       pour roues vues de ce côté : avance = rotation horaire = positif) */
-    return (distInCarWidths / radius) * (180 / Math.PI);
+  /** Angle roue (deg) à partir de la distance px parcourue */
+  function wheelAngleDeg(travelPx, diameterPct) {
+    const carW = carMover ? carMover.offsetWidth : 180;
+    const radiusPx = (diameterPct / 100) * carW * 0.5;
+    if (radiusPx <= 0) return 0;
+    return (travelPx / radiusPx) * (180 / Math.PI);
   }
 
   function setLights(on) {
@@ -138,28 +148,43 @@
     carRig.classList.toggle("is-lit", on);
   }
 
-  function setSmoke(on, intensity) {
-    if (!carRig || reduce) return;
-    smoking = on;
-    smokeIntensity = intensity;
-    carRig.classList.toggle("is-smoking", on && intensity > 0.05);
-    carRig.style.setProperty("--smoke-intensity", String(clamp(intensity, 0, 0.85)));
+  function setEngineSmoking(on, intensity) {
+    if (!carBundle || reduce) return;
+    if (on) {
+      clearTimeout(smokeEndTimer);
+      smoking = true;
+      carBundle.classList.add("is-smoking");
+      carBundle.classList.remove("is-smoke-ending");
+      carBundle.style.setProperty("--smoke-intensity", String(clamp(intensity, 0.2, 0.85)));
+      return;
+    }
+    if (!smoking) return;
+    smoking = false;
+    carBundle.classList.remove("is-smoking");
+    carBundle.classList.add("is-smoke-ending");
+    /* Laisse finir la puff en cours (~1,35 s) puis plus aucune fumée */
+    clearTimeout(smokeEndTimer);
+    smokeEndTimer = window.setTimeout(() => {
+      if (!carBundle) return;
+      carBundle.classList.remove("is-smoke-ending");
+      carBundle.style.setProperty("--smoke-intensity", "0");
+    }, 1400);
   }
 
   function applyVisuals() {
     if (carMover) {
-      const x = carXFromLogical(smoothLogical);
-      carMover.style.transform = `translate3d(${x}%, 0, 0)`;
+      const x = carXFromTravel(travelSmoothPx);
+      carMover.style.transform = `translate3d(${x}px, 0, 0)`;
     }
 
     if (!reduce) {
-      const angF = wheelAngleDeg(travelSmooth, 10.6);
-      const angR = wheelAngleDeg(travelSmooth, 11.2);
+      const angF = wheelAngleDeg(travelSmoothPx, 10.6);
+      const angR = wheelAngleDeg(travelSmoothPx, 11.2);
       if (wheelFront) wheelFront.style.transform = `rotate(${angF}deg)`;
       if (wheelRear) wheelRear.style.transform = `rotate(${angR}deg)`;
 
       if (roadStrip) {
-        /* Modulo du motif : pas de saut visible */
+        /* Modulo du motif : indépendant de la voiture, pas de saut visible */
         const mod = ((roadOffsetPx % ROAD_PATTERN_PX) + ROAD_PATTERN_PX) % ROAD_PATTERN_PX;
         roadStrip.style.transform = `translate3d(${-mod}px, 0, 0)`;
       }
@@ -226,13 +251,13 @@
     }
 
     if (!reduce && animate) {
-      travelAbs += delta;
-      movingUntil = performance.now() + SNAP_MS + 80;
+      /* Un pas de panneau = avance continue (wrap hors écran géré par modulo) */
+      travelAbsPx += delta * TRAVEL_PX_PER_STEP();
+      lastMotionTs = performance.now();
       setLights(true);
-      setSmoke(true, Math.min(0.75, 0.35 + Math.abs(delta) * 0.25));
     } else if (!animate) {
       smoothLogical = targetLogical;
-      travelSmooth = travelAbs;
+      travelSmoothPx = travelAbsPx;
     }
 
     syncWindowScroll();
@@ -399,32 +424,44 @@
     }
   }
 
-  /* Boucle rAF : lerp position voiture, angle roues, défilement route */
+  /* Boucle rAF : lerp voyage, roues, route, moteur (fumée / phares) */
   function tick(ts) {
     if (!lastTs) lastTs = ts;
     const dt = Math.min(0.05, (ts - lastTs) / 1000);
     lastTs = ts;
 
-    const moving = ts < movingUntil;
-    const t = moving ? LERP_FAST : LERP;
+    const catchingUp = Math.abs(travelAbsPx - travelSmoothPx) > 0.5;
+    const t = catchingUp ? LERP_FAST : LERP;
 
-    const prevTravel = travelSmooth;
+    const prevTravel = travelSmoothPx;
     smoothLogical = lerp(smoothLogical, targetLogical, t);
-    travelSmooth = lerp(travelSmooth, travelAbs, t);
+    travelSmoothPx = lerp(travelSmoothPx, travelAbsPx, t);
 
-    const dTravel = travelSmooth - prevTravel;
-    /* Route : conversion unités → pixels (approx largeur viewport) */
-    roadOffsetPx += dTravel * (CAR_TRAVEL / 100) * window.innerWidth * 0.85;
+    const dTravel = travelSmoothPx - prevTravel;
+    /* Vitesse lissée (px/s) pour seuil moteur */
+    const instantVel = dt > 0 ? Math.abs(dTravel) / dt : 0;
+    velocityPx = lerp(velocityPx, instantVel, 0.25);
+
+    /* Route : même delta, modulo du motif — indépendant de la voiture */
+    roadOffsetPx += dTravel;
 
     if (!reduce) {
-      if (moving) {
+      /* Moteur allumé tant que la voiture rattrape encore sa cible ou roule vraiment */
+      const stillTraveling = Math.abs(travelAbsPx - travelSmoothPx) > 2;
+      const engineOn = velocityPx > VELOCITY_ON || stillTraveling;
+      if (engineOn) {
+        lastMotionTs = ts;
         setLights(true);
-        const speed = Math.min(1, Math.abs(dTravel) / Math.max(dt, 0.001) / 2.5);
-        setSmoke(true, 0.25 + speed * 0.55);
+        const intensity = clamp(0.35 + (velocityPx / 500) * 0.45, 0.35, 0.85);
+        setEngineSmoking(true, intensity);
       } else {
-        /* Extinction douce au repos ; phares off seulement tout en haut */
-        setSmoke(false, 0);
-        if (Math.abs(smoothLogical) < 0.02 && Math.abs(targetLogical) < 0.02) {
+        const idleFor = ts - lastMotionTs;
+        /* Plus de nouvelles particules après ~150 ms sans mouvement */
+        if (idleFor >= SMOKE_IDLE_MS) {
+          setEngineSmoking(false, 0);
+        }
+        /* Phares s'éteignent ~1 s après l'arrêt */
+        if (idleFor >= LIGHTS_IDLE_MS) {
           setLights(false);
         }
       }

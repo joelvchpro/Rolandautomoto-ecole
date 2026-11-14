@@ -573,6 +573,8 @@ body.is-hero .brand {
   height: 3.4rem;
   background: linear-gradient(180deg, #5a6168 0%, var(--road) 55%, #3d4349 100%);
   box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.08);
+  /* La fumée déborde à gauche de la voiture : ne pas rogner */
+  overflow: visible;
 }
 
 .road-line {
@@ -602,22 +604,31 @@ body.is-hero .brand {
   transform: translate3d(0, 0, 0);
 }
 
-/* Piste pleine largeur : translateX(%) se calcule sur la route */
+/* Mover : largeur = voiture ; déplacement en px (modulo hors écran) */
 .car-mover {
   position: absolute;
   left: 0;
   bottom: 1.35rem;
-  width: 100%;
+  width: min(220px, 36vw);
   pointer-events: none;
   will-change: transform;
-  transform: translate3d(4%, 0, 0);
+  transform: translate3d(0, 0, 0);
+  overflow: visible;
+}
+
+.car-bundle {
+  position: relative;
+  width: 100%;
+  overflow: visible;
 }
 
 .car {
   position: relative;
-  width: min(220px, 36vw);
+  width: 100%;
   filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.22));
   line-height: 0;
+  overflow: visible;
+  z-index: 2;
 }
 
 /* Conteneur au ratio de l'image : overlays en % */
@@ -625,6 +636,7 @@ body.is-hero .brand {
   position: relative;
   width: 100%;
   aspect-ratio: 959 / 350;
+  overflow: visible;
 }
 
 .car-art {
@@ -765,57 +777,83 @@ body.is-hero .brand {
   opacity: 0.85;
 }
 
-/* Fumée échappement — émission sous le pare-chocs arrière (gauche) */
+/*
+  Fumée — cause d'invisibilité corrigée :
+  - était z-index:0 sous .car-art, particules % trop petites, gris trop sombre,
+    et clip possible via filter:drop-shadow du .car → sortie en sœur du .car
+*/
 .exhaust {
   position: absolute;
   left: 3%;
-  top: 78%;
-  width: 14%;
-  height: 22%;
-  z-index: 0;
+  top: 82%;
+  width: 1px;
+  height: 1px;
+  z-index: 3; /* au-dessus de la route et visible à côté de la carrosserie */
   pointer-events: none;
+  overflow: visible;
   opacity: 0;
-  transition: opacity 0.25s var(--ease);
+  transition: opacity 0.15s var(--ease);
 }
 
-.car-rig.is-smoking .exhaust {
-  opacity: var(--smoke-intensity, 0.55);
+.car-bundle.is-smoking .exhaust,
+.car-bundle.is-smoke-ending .exhaust {
+  opacity: 1;
 }
 
 .smoke {
   position: absolute;
-  left: 20%;
-  top: 40%;
-  width: 28%;
-  aspect-ratio: 1;
+  left: 0;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(170, 176, 182, 0.55) 0%, rgba(170, 176, 182, 0.15) 55%, transparent 70%);
+  /* Blanc cassé lisible sur la route grise (évite le fond blanc de page) */
+  background: radial-gradient(
+    circle,
+    rgba(245, 245, 245, 0.92) 0%,
+    rgba(220, 220, 220, 0.7) 42%,
+    rgba(200, 200, 200, 0) 74%
+  );
+  filter: blur(3px);
   opacity: 0;
   will-change: transform, opacity;
+  animation: none;
 }
 
-.car-rig.is-smoking .smoke {
-  animation: smoke-puff 1.15s ease-out infinite;
+/* Émission active (moteur allumé) */
+.car-bundle.is-smoking .smoke {
+  animation: smoke-puff 1.35s ease-out infinite;
 }
 
-.smoke.s2 { animation-delay: 0.18s; left: 8%; }
-.smoke.s3 { animation-delay: 0.36s; left: 28%; top: 55%; }
-.smoke.s4 { animation-delay: 0.54s; left: 0%; top: 30%; width: 34%; }
-.smoke.s5 { animation-delay: 0.72s; left: 16%; top: 50%; }
-.smoke.s6 { animation-delay: 0.9s; left: 4%; top: 62%; width: 22%; }
+/* Fin de course : plus de nouvelles boucles, une dernière puff puis stop */
+.car-bundle.is-smoke-ending .smoke {
+  animation: smoke-puff 1.35s ease-out 1 forwards;
+}
 
-/* Vers l'arrière = vers la gauche + léger haut + fade */
+.car-bundle.is-smoking .smoke.s2,
+.car-bundle.is-smoke-ending .smoke.s2 { animation-delay: 0.18s; }
+.car-bundle.is-smoking .smoke.s3,
+.car-bundle.is-smoke-ending .smoke.s3 { animation-delay: 0.36s; }
+.car-bundle.is-smoking .smoke.s4,
+.car-bundle.is-smoke-ending .smoke.s4 { animation-delay: 0.54s; }
+.car-bundle.is-smoking .smoke.s5,
+.car-bundle.is-smoke-ending .smoke.s5 { animation-delay: 0.72s; }
+.car-bundle.is-smoking .smoke.s6,
+.car-bundle.is-smoke-ending .smoke.s6 { animation-delay: 0.9s; }
+
+/* Principalement vers l'arrière (gauche), peu vers le haut → reste sur la route grise */
 @keyframes smoke-puff {
   0% {
     opacity: 0;
-    transform: translate3d(0, 0, 0) scale(0.45);
+    transform: translate3d(0, 0, 0) scale(0.85);
   }
-  18% {
-    opacity: 0.7;
+  14% {
+    opacity: 0.9;
   }
   100% {
     opacity: 0;
-    transform: translate3d(-120%, -55%, 0) scale(1.55);
+    transform: translate3d(-52px, -8px, 0) scale(2.85);
   }
 }
 
@@ -1038,9 +1076,6 @@ body.is-hero .brand {
 
   .car-mover {
     bottom: calc(1.05rem + env(safe-area-inset-bottom, 0px));
-  }
-
-  .car {
     width: min(148px, 42vw);
   }
 
@@ -1154,8 +1189,13 @@ body.is-hero .brand {
   }
 
   .smoke,
-  .car-rig.is-smoking .smoke {
+  .car-bundle.is-smoking .smoke,
+  .car-bundle.is-smoke-ending .smoke {
     animation: none !important;
+    opacity: 0 !important;
+  }
+
+  .exhaust {
     opacity: 0 !important;
   }
 
