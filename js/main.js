@@ -10,7 +10,6 @@
   const wheelFront = document.getElementById("wheel-front");
   const wheelRear = document.getElementById("wheel-rear");
   const nav = document.getElementById("site-nav");
-  const toggle = document.querySelector(".nav-toggle");
   const year = document.getElementById("year");
   const navLinks = nav ? [...nav.querySelectorAll("[data-panel]")] : [];
 
@@ -407,8 +406,6 @@
       e.preventDefault();
       const idx = Number(link.dataset.panel);
       if (!Number.isNaN(idx)) goToLogical(idx);
-      if (nav) nav.classList.remove("is-open");
-      if (toggle) toggle.setAttribute("aria-expanded", "false");
     });
   });
 
@@ -426,14 +423,6 @@
       goToLogical(0);
     });
   });
-
-  if (toggle && nav) {
-    toggle.addEventListener("click", () => {
-      const open = toggle.getAttribute("aria-expanded") === "true";
-      toggle.setAttribute("aria-expanded", String(!open));
-      nav.classList.toggle("is-open", !open);
-    });
-  }
 
   /* Déroulés Services : un seul ouvert à la fois, léger */
   function setServiceOpen(item, open) {
