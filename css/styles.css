@@ -142,33 +142,6 @@ body.is-hero .brand {
   color: var(--blue);
 }
 
-.nav-toggle {
-  display: none;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-}
-
-.nav-toggle span {
-  display: block;
-  width: 1.35rem;
-  height: 2px;
-  margin: 0.35rem auto;
-  background: var(--ink);
-  transition: transform 0.25s var(--ease), opacity 0.2s;
-}
-
-.nav-toggle[aria-expanded="true"] span:first-child {
-  transform: translateY(4px) rotate(45deg);
-}
-
-.nav-toggle[aria-expanded="true"] span:last-child {
-  transform: translateY(-4px) rotate(-45deg);
-}
-
 /* Scroll story */
 .scroll-story {
   /* Height set in JS for infinite track (clones) */
@@ -1089,38 +1062,13 @@ body.is-hero .brand {
     --road-h: 4.4rem;
   }
 
-  .nav-toggle {
-    display: block;
-  }
-
+  /* Liens visibles directement — plus de menu hamburger */
   .site-nav {
-    position: fixed;
-    top: var(--header-h);
-    right: 0.75rem;
-    left: auto;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    min-width: 11rem;
-    padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid rgba(0, 66, 137, 0.08);
-    border-radius: 0.35rem;
-    box-shadow: 0 12px 32px rgba(28, 36, 48, 0.1);
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-6px);
-    transition: opacity 0.2s var(--ease), transform 0.2s var(--ease);
-  }
-
-  .site-nav.is-open {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
+    gap: 0.85rem;
   }
 
   .site-nav a {
-    padding: 0.7rem 0.85rem;
+    font-size: 0.88rem;
   }
 
   .panel {
