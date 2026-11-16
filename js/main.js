@@ -314,8 +314,25 @@
     return { dx, dy };
   }
 
+  function isServicesUi(target) {
+    return !!(target && target.closest && target.closest(".services-panel"));
+  }
+
   function onWheel(e) {
     if (reduce) return;
+
+    /* Laisser défiler le panneau Services s’il déborde (déroulés ouverts) */
+    const servicesPanel = e.target && e.target.closest && e.target.closest(".services-panel");
+    if (servicesPanel && servicesPanel.scrollHeight > servicesPanel.clientHeight + 1) {
+      const { dy } = normalizeWheelDelta(e);
+      const atTop = servicesPanel.scrollTop <= 0;
+      const atBottom =
+        servicesPanel.scrollTop + servicesPanel.clientHeight >= servicesPanel.scrollHeight - 1;
+      if ((dy < 0 && !atTop) || (dy > 0 && !atBottom) || (dy === 0)) {
+        return;
+      }
+    }
+
     e.preventDefault();
     if (animating || wheelLocked) return;
 
@@ -338,6 +355,8 @@
 
   function onPointerDown(e) {
     if (reduce || e.pointerType === "mouse") return;
+    /* Ne pas lancer un swipe de panneau depuis les déroulés Services */
+    if (isServicesUi(e.target)) return;
     swipe = { id: e.pointerId, x: e.clientX, y: e.clientY, decided: false };
   }
 
@@ -362,6 +381,7 @@
   let touchStart = null;
   function onTouchStart(e) {
     if (reduce || !e.touches[0]) return;
+    if (isServicesUi(e.target)) return;
     const t = e.touches[0];
     touchStart = { x: t.clientX, y: t.clientY, decided: false };
   }
@@ -414,6 +434,35 @@
       nav.classList.toggle("is-open", !open);
     });
   }
+
+  /* Déroulés Services : un seul ouvert à la fois, léger */
+  function setServiceOpen(item, open) {
+    const btn = item.querySelector(".service-toggle");
+    const detail = item.querySelector(".service-detail");
+    if (!btn || !detail) return;
+    item.classList.toggle("is-open", open);
+    btn.setAttribute("aria-expanded", String(open));
+    detail.setAttribute("aria-hidden", String(!open));
+  }
+
+  panels.addEventListener("click", (e) => {
+    const btn = e.target && e.target.closest && e.target.closest(".service-toggle");
+    if (!btn || !panels.contains(btn)) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const item = btn.closest(".service-item");
+    if (!item) return;
+    const list = item.closest(".service-list");
+    const willOpen = !item.classList.contains("is-open");
+
+    if (list) {
+      list.querySelectorAll(".service-item.is-open").forEach((el) => {
+        if (el !== item) setServiceOpen(el, false);
+      });
+    }
+    setServiceOpen(item, willOpen);
+  });
 
   function onScrollLock() {
     if (animating) return;
